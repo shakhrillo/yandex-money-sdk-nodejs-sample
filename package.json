@@ -1,0 +1,15 @@
+{
+  "name": "yandex-money-nodejs-sample",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Anton Ermak",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.9.2",
+    "cookie-session": "^1.0.2",
+    "express": "^4.10.0"
+  }
+}

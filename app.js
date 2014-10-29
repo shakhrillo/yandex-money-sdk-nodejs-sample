@@ -1,4 +1,5 @@
 var express = require('express');
+require("long-stack-traces");
 var bodyParser = require('body-parser');
 var swig = require('swig');
 var app = express();
@@ -29,6 +30,9 @@ app.post('/obtain-token/', function(req, res) {
   );
   res.redirect(url);
 });
+
+require('./controllers/wallet')('', app); 
+
 app.listen(3000, function () {
   console.log("Server is started at 3000 port");
 });

@@ -8,6 +8,7 @@
   "author": "Anton Ermak",
   "license": "MIT",
   "dependencies": {
+    "async": "^0.9.0",
     "body-parser": "^1.9.2",
     "cookie-session": "^1.0.2",
     "express": "^4.10.0",

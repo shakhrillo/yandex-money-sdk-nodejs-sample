@@ -6,10 +6,12 @@ var app = express();
 var utils = require('./utils.js');
 var ym = require('yandex-money-sdk');
 var constants = require("./constants");
+var session = require('express-session');
 
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(session({secret: "super secret key", resave: true, saveUninitialized: true}));
 
 swig.setDefaults({ loader: swig.loaders.fs(__dirname + '/views' )});
 
@@ -32,6 +34,7 @@ app.post('/obtain-token/', function(req, res) {
 });
 
 require('./controllers/wallet')('', app); 
+require('./controllers/external')('', app); 
 
 app.listen(3000, function () {
   console.log("Server is started at 3000 port");

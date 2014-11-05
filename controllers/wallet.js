@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var ym = require('yandex-money-sdk');
 var async = require('async');
+var util = require('util');
 
 var constants = require('../constants');
 var utils = require('../utils');
@@ -89,30 +90,45 @@ router.get('/redirect/', function (req, res) {
         },
       },
         function gatherResults(err, results) {
+          var operations_info, methods;
           if(err) {
             res.send(err.toString());
           }
-          var methods = [
+          if(results.operationHistory.operations.length < 3) {
+            operations_info = "You have less than 3 payment operations";
+          }
+          else {
+            operations_info = util.format(
+              "The last 3 payment titles are: %s, %s, %s",
+              results.operationHistory.operations[0].title,
+              results.operationHistory.operations[1].title,
+              results.operationHistory.operations[2].title
+            );
+          }
+          methods = [
             {
-              info: '',
+              info: util.format('You wallet balance is %s RUB',
+                                results.accountInfo.balance),
               code: '',
               name: 'Account-info',
               response: results.accountInfo
             },
             {
-              info: '',
+              info: operations_info,
               code: '',
               name: 'Operation-history',
               response: results.operationHistory
             },
             {
-              info: '',
+              info: util.format('You make request payment. Request id is %s',
+                               results.payment.request.request_id),
               code: '',
               name: 'Request-payment',
               response: results.payment.request
             },
             {
-              info: '',
+              info: util.format('You have made process payment. Payment id is %s',
+                               results.payment.process.payment_id),
               code: '',
               name: 'Process-payment',
               response: results.payment.process

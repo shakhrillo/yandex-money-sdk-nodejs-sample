@@ -4,14 +4,11 @@ var ym = require('yandex-money-sdk');
 var async = require('async');
 var util = require('util');
 var url = require('url');
+var fs = require('fs');
 
 var constants = require('../constants');
 var utils = require('../utils');
 
-//function URLs {
-//}
-
-//URLs.
 var URL = {
   success: "/process-external-success/",
   fail: "/process-external-fail/"
@@ -33,8 +30,6 @@ function template_meta(method, index) {
     }
   ];
 }
-//var URLs =
-
 
 router.post("/process-external/", function (req, res) {
   var phone = req.body.phone;
@@ -43,6 +38,7 @@ router.post("/process-external/", function (req, res) {
   var context = {
   };
   req.session.responses = {};
+  req.session.to_wallet = false;
 
   async.waterfall([
     function getInstanceId(callback) {
@@ -50,6 +46,8 @@ router.post("/process-external/", function (req, res) {
         constants.CLIENT_ID, callback);
     },
     function getRequestId(data, r, callback) {
+      if(data.status !== "success")
+        callback(err);
       req.session.responses.instance_id = JSON.stringify(data, undefined, 2);
       req.session.instance_id = data.instance_id;
       context.api = new ym.ExternalPayment(data.instance_id);
@@ -61,6 +59,8 @@ router.post("/process-external/", function (req, res) {
       context.api.request(options, callback);
     },
     function getAuthUrl(data, r, callback) {
+      if(data.status !== "success")
+        callback(err);
       req.session.request_id = data.request_id;
       req.session.responses.request_payment = JSON.stringify(data, undefined, 2);
       var success_url = util.format(
@@ -75,6 +75,8 @@ router.post("/process-external/", function (req, res) {
       context.api.process(options, callback);
     },
     function makeRedirect(data, r, callback) {
+      if(data.status !== "success")
+        callback(err);
       req.session.responses.process_payment1 = JSON.stringify(data, undefined, 2);
       res.redirect(url.format({
         pathname: data.acs_uri,
@@ -88,8 +90,12 @@ router.post("/process-external/", function (req, res) {
   });
 });
 
-router.get(URL.success, function (req, res) {
+function readSample(file_name) {
+  return fs.readFileSync(__dirname + "/../code_samples/external/" + file_name,
+                        "utf-8");
+}
 
+router.get(URL.success, function (req, res) {
   var context = {
     request_id: req.session.request_id,
     instance_id: req.session.instance_id,
@@ -128,19 +134,21 @@ router.get(URL.success, function (req, res) {
       "payment_result": context.process_response,
       "panels": {
         "instance_id": template_meta({
-          code: "",
+          code: readSample("instance_id.js"),
           response: req.session.responses.instance_id
         }, 1),
         "request_payment": template_meta({
-          code: "",
+          code: readSample(
+            req.session.to_wallet?"request_payment_wallet.js"
+            :"request_payment_phone.js"),
           response: req.session.responses.request_payment
         }, 2),
         "process_payment1": template_meta({
-          code: "",
+          code: readSample("process_payment_auth.js"),
           response: req.session.responses.process_payment1
         }, 3),
         "process_payment2": template_meta({
-          code: "",
+          code: readSample("process_payment_check.js"),
           response: JSON.stringify(context.process_response, undefined, 2)
         }, 4)
       },
@@ -159,13 +167,18 @@ router.post("/wallet/process-external/", function (req, res) {
   var context = {
   };
   req.session.responses = {};
+  req.session.to_wallet = true;
 
   async.waterfall([
     function getInstanceId(callback) {
+      if(data.status !== "success")
+        callback(err);
       ym.ExternalPayment.getInstanceId(
         constants.CLIENT_ID, callback);
     },
     function getRequestId(data, r, callback) {
+      if(data.status !== "success")
+        callback(err);
       req.session.responses.instance_id = JSON.stringify(data, undefined, 2);
       req.session.instance_id = data.instance_id;
       context.api = new ym.ExternalPayment(data.instance_id);
@@ -179,6 +192,8 @@ router.post("/wallet/process-external/", function (req, res) {
       context.api.request(options, callback);
     },
     function getAuthUrl(data, r, callback) {
+      if(data.status !== "ext_auth_required")
+        callback(err);
       req.session.request_id = data.request_id;
       req.session.responses.request_payment = JSON.stringify(data, undefined, 2);
       var success_url = util.format(
@@ -193,6 +208,8 @@ router.post("/wallet/process-external/", function (req, res) {
       context.api.process(options, callback);
     },
     function makeRedirect(data, r, callback) {
+      if(data.status !== "success")
+        callback(err);
       req.session.responses.process_payment1 = JSON.stringify(data, undefined, 2);
       res.redirect(url.format({
         pathname: data.acs_uri,

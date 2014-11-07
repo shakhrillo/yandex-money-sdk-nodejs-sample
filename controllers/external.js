@@ -100,7 +100,7 @@ router.post("/process-external/", function (req, res, next) {
 });
 
 
-router.get(URL.success, function (req, res) {
+router.get(URL.success, function (req, res, next) {
   var context = {
     request_id: req.session.request_id,
     instance_id: req.session.instance_id,
@@ -112,8 +112,10 @@ router.get(URL.success, function (req, res) {
   var fail_url = util.format(
     "http://%s%s", req.headers.host, URL.fail);
   if(!context.request_id || !context.instance_id) {
-    //TODO: show error
-    res.send(context);
+    next({
+      err: "Cookie is expired or incorrect",
+      home: "../"
+    });
     return;
   }
   context.api = new ym.ExternalPayment(context.instance_id);
@@ -176,10 +178,6 @@ router.post("/wallet/process-external/", function (req, res, next) {
 
   async.waterfall([
     function getInstanceId(callback) {
-      if(data.status !== "success") {
-        callback(data);
-        return;
-      }
       ym.ExternalPayment.getInstanceId(
         constants.CLIENT_ID, callback);
     },
@@ -232,7 +230,7 @@ router.post("/wallet/process-external/", function (req, res, next) {
   ], function complete(err) {
     if(err) {
       next({
-        home: "../",
+        home: "../../",
         err: err
       });
     }

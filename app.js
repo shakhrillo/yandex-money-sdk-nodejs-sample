@@ -38,8 +38,9 @@ require('./controllers/wallet')('', app);
 require('./controllers/external')('', app); 
 
 app.use(function(err, req, res, next) {
+  var text = typeof err.err === "string"?err.err:JSON.stringify(err.err, undefined, 2);
   var template = utils.render("error.html", {
-    text: JSON.stringify(err.err, undefined, 2),
+    text: text,
     home: err.home
   });
   res.send(template);

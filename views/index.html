@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Yandex money php sample</title>
+    <title>Yandex money {{ lang }} sample</title>
     <link href="http://yandex.st/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
@@ -59,7 +59,7 @@
             <p><button class="btn btn-primary" type="submit">Obtain token</button></p>
         </form>
         <p>Documentation about scope permissions is <a href="http://api.yandex.ru/money/doc/dg/concepts/protocol-rights.xml">here</a>.</p>
-        <strong>Note:</strong> Take care that HOST of the sample app MUST be equal to host of REDIRECT_URI(constants.php).
+        <strong>Note:</strong> Take care that HOST of the sample app MUST be equal to host of REDIRECT_URI(defined in constants file).
 
         <h3>Payments from bank cards without authorization</h3>
         <h4>To mobile phone</h4>

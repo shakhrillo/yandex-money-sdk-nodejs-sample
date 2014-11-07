@@ -31,7 +31,7 @@ function template_meta(method, index) {
   ];
 }
 
-router.post("/process-external/", function (req, res) {
+router.post("/process-external/", function (req, res, next) {
   var phone = req.body.phone;
   var value = req.body.value;
 
@@ -46,8 +46,10 @@ router.post("/process-external/", function (req, res) {
         constants.CLIENT_ID, callback);
     },
     function getRequestId(data, r, callback) {
-      if(data.status !== "success")
-        callback(err);
+      if(data.status !== "success") {
+        callback(data);
+        return;
+      }
       req.session.responses.instance_id = JSON.stringify(data, undefined, 2);
       req.session.instance_id = data.instance_id;
       context.api = new ym.ExternalPayment(data.instance_id);
@@ -59,8 +61,10 @@ router.post("/process-external/", function (req, res) {
       context.api.request(options, callback);
     },
     function getAuthUrl(data, r, callback) {
-      if(data.status !== "success")
-        callback(err);
+      if(data.status !== "success") {
+        callback(data);
+        return;
+      }
       req.session.request_id = data.request_id;
       req.session.responses.request_payment = JSON.stringify(data, undefined, 2);
       var success_url = util.format(
@@ -75,8 +79,10 @@ router.post("/process-external/", function (req, res) {
       context.api.process(options, callback);
     },
     function makeRedirect(data, r, callback) {
-      if(data.status !== "success")
-        callback(err);
+      if(data.status !== "ext_auth_required") {
+        callback(data);
+        return;
+      }
       req.session.responses.process_payment1 = JSON.stringify(data, undefined, 2);
       res.redirect(url.format({
         pathname: data.acs_uri,
@@ -85,7 +91,10 @@ router.post("/process-external/", function (req, res) {
     }
   ], function complete(err) {
     if(err) {
-      res.send(err);
+      next({
+        home: "../",
+        err: err
+      });
     }
   });
 });
@@ -160,7 +169,7 @@ router.get(URL.success, function (req, res) {
 });
 
 // -----------
-router.post("/wallet/process-external/", function (req, res) {
+router.post("/wallet/process-external/", function (req, res, next) {
   var wallet = req.body.wallet;
   var value = req.body.value;
 
@@ -171,14 +180,18 @@ router.post("/wallet/process-external/", function (req, res) {
 
   async.waterfall([
     function getInstanceId(callback) {
-      if(data.status !== "success")
-        callback(err);
+      if(data.status !== "success") {
+        callback(data);
+        return;
+      }
       ym.ExternalPayment.getInstanceId(
         constants.CLIENT_ID, callback);
     },
     function getRequestId(data, r, callback) {
-      if(data.status !== "success")
-        callback(err);
+      if(data.status !== "success") {
+        callback(data);
+        return;
+      }
       req.session.responses.instance_id = JSON.stringify(data, undefined, 2);
       req.session.instance_id = data.instance_id;
       context.api = new ym.ExternalPayment(data.instance_id);
@@ -192,8 +205,10 @@ router.post("/wallet/process-external/", function (req, res) {
       context.api.request(options, callback);
     },
     function getAuthUrl(data, r, callback) {
-      if(data.status !== "ext_auth_required")
-        callback(err);
+      if(data.status !== "status") {
+        callback(data);
+        return;
+      }
       req.session.request_id = data.request_id;
       req.session.responses.request_payment = JSON.stringify(data, undefined, 2);
       var success_url = util.format(
@@ -208,8 +223,10 @@ router.post("/wallet/process-external/", function (req, res) {
       context.api.process(options, callback);
     },
     function makeRedirect(data, r, callback) {
-      if(data.status !== "success")
-        callback(err);
+      if(data.status !== "ext_auth_required") {
+        callback(data);
+        return;
+      }
       req.session.responses.process_payment1 = JSON.stringify(data, undefined, 2);
       res.redirect(url.format({
         pathname: data.acs_uri,
@@ -218,7 +235,10 @@ router.post("/wallet/process-external/", function (req, res) {
     }
   ], function complete(err) {
     if(err) {
-      res.send(err);
+      next({
+        home: "../",
+        err: err
+      });
     }
   });
 });

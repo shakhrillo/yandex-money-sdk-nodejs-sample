@@ -1,8 +1,8 @@
 api = new ym.ExternalPayment(instance_id);
 var options = {
   pattern_id: "p2p",
-  to: wallet,
-  amount_due: value,
+  to: wallet, // recipient's account number from input form
+  amount_due: value, // amount_due from html form
   comment: "sample test payment",
   message: "sample test payment"
 };

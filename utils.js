@@ -5,7 +5,7 @@ function render(file_name, locals) {
     locals = {};
   }
   var template = swig.compileFile(file_name);
-  locals.lang = 'Node';
+  locals.lang = 'NodeJS';
   return template(locals);
 }
 

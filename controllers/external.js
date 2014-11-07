@@ -4,10 +4,10 @@ var ym = require('yandex-money-sdk');
 var async = require('async');
 var util = require('util');
 var url = require('url');
-var fs = require('fs');
 
 var constants = require('../constants');
 var utils = require('../utils');
+var readSample = utils.readSample;
 
 var URL = {
   success: "/process-external-success/",
@@ -99,10 +99,6 @@ router.post("/process-external/", function (req, res, next) {
   });
 });
 
-function readSample(file_name) {
-  return fs.readFileSync(__dirname + "/../code_samples/external/" + file_name,
-                        "utf-8");
-}
 
 router.get(URL.success, function (req, res) {
   var context = {
@@ -143,21 +139,21 @@ router.get(URL.success, function (req, res) {
       "payment_result": context.process_response,
       "panels": {
         "instance_id": template_meta({
-          code: readSample("instance_id.js"),
+          code: readSample("external/instance_id.js"),
           response: req.session.responses.instance_id
         }, 1),
         "request_payment": template_meta({
-          code: readSample(
+          code: readSample("/external/" + (
             req.session.to_wallet?"request_payment_wallet.js"
-            :"request_payment_phone.js"),
+            :"request_payment_phone.js")),
           response: req.session.responses.request_payment
         }, 2),
         "process_payment1": template_meta({
-          code: readSample("process_payment_auth.js"),
+          code: readSample("external/process_payment_auth.js"),
           response: req.session.responses.process_payment1
         }, 3),
         "process_payment2": template_meta({
-          code: readSample("process_payment_check.js"),
+          code: readSample("external/process_payment_check.js"),
           response: JSON.stringify(context.process_response, undefined, 2)
         }, 4)
       },

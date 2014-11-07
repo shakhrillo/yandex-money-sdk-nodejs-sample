@@ -17,8 +17,6 @@ app.use(morgan('dev'));
 
 swig.setDefaults({ loader: swig.loaders.fs(__dirname + '/views' )});
 
-// parse application/json
-//app.use(bodyParser.json());
 
 app.get('/', function(req, res){
   var result = utils.render('index.html');

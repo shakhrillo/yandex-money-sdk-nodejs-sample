@@ -6,6 +6,7 @@ var util = require('util');
 
 var constants = require('../constants');
 var utils = require('../utils');
+var readSample = utils.readSample;
 
 function fake(callback) {
   callback(null, {});
@@ -29,7 +30,7 @@ function templateMeta(method, index) {
   return method;
 }
 
-router.get('/redirect/', function (req, res) {
+router.get('/redirect/', function (req, res, next) {
   var code = req.query.code;
 
   //fake(
@@ -92,7 +93,7 @@ router.get('/redirect/', function (req, res) {
         function gatherResults(err, results) {
           var operations_info, methods;
           if(err) {
-            res.send(err.toString());
+            next(err);
           }
           if(results.operationHistory.operations.length < 3) {
             operations_info = "You have less than 3 payment operations";
@@ -109,27 +110,27 @@ router.get('/redirect/', function (req, res) {
             {
               info: util.format('You wallet balance is %s RUB',
                                 results.accountInfo.balance),
-              code: '',
+              code: readSample("auth/account_info.js"),
               name: 'Account-info',
               response: results.accountInfo
             },
             {
               info: operations_info,
-              code: '',
+              code: readSample("auth/operation_history.js"),
               name: 'Operation-history',
               response: results.operationHistory
             },
             {
               info: util.format('You make request payment. Request id is %s',
                                results.payment.request.request_id),
-              code: '',
+              code: readSample("auth/request_payment.js"),
               name: 'Request-payment',
               response: results.payment.request
             },
             {
               info: util.format('You have made process payment. Payment id is %s',
                                results.payment.process.payment_id),
-              code: '',
+              code: readSample("auth/process_payment.js"),
               name: 'Process-payment',
               response: results.payment.process
             }

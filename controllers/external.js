@@ -237,6 +237,14 @@ router.post("/wallet/process-external/", function (req, res, next) {
   });
 });
 
+router.get(URL.fail, function (req, res, next) {
+  next({
+    home: "../",
+    err: "Yandex.Money redirects to fail page. Take a look at address bar."
+  });
+});
+
+
 module.exports = function(prefix, app) {
   app.use(prefix, router);
 };

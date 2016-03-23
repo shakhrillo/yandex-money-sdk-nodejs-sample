@@ -199,7 +199,7 @@ router.post("/wallet/process-external/", function (req, res, next) {
       context.api.request(options, callback);
     },
     function getAuthUrl(data, r, callback) {
-      if(data.status !== "status") {
+      if(data.status !== "success") {
         callback(data);
         return;
       }
